@@ -36,3 +36,14 @@ services:
       - AWS_REGION=us-east-1
     depends_on:
       - localstack
+  
+  frontend:
+    image: node:18-slim
+    working_dir: /app
+    volumes:
+      - ./app/frontend:/app
+    ports:
+      - "3000:3000"
+    command: sh -c "npm install && npm start"
+    depends_on:
+      - backend
