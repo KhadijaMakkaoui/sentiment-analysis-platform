@@ -13,9 +13,20 @@ app = Flask(__name__)
 QUEUE_NAME = os.getenv('SQS_QUEUE_NAME', 'sentiment-queue')
 REGION = os.getenv('AWS_REGION', 'us-east-1')
 
+if QUEUE_NAME is None:
+    raise ValueError("ERROR: SQS_NAME environment variable is not set!")
 # Initialize SQS Client
-sqs = boto3.client('sqs', region_name=REGION)
+# Get the endpoint URL (LocalStack) if it exists, otherwise None (Real AWS)
+# We use this trick to make the code work both locally and in the Cloud
+ENDPOINT_URL = os.getenv('SQS_ENDPOINT_URL') 
 
+sqs = boto3.client(
+    'sqs', 
+    region_name=REGION,
+    endpoint_url=ENDPOINT_URL,  # Add this line
+    aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
+    aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY')
+)
 @app.route('/analyze', methods=['POST'])
 def analyze():
     data = request.json
