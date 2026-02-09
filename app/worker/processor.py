@@ -1,12 +1,28 @@
 import boto3
 import os
 import time
+import os
 from textblob import TextBlob
+
+print(f"DEBUG: Current Environment Variables: {os.environ}")
 
 QUEUE_URL = os.getenv('SQS_URL')
 REGION = os.getenv('AWS_REGION', 'us-east-1')
 
-sqs = boto3.client('sqs', region_name=REGION)
+# Get the endpoint URL (LocalStack) if it exists, otherwise None (Real AWS)
+# We use this trick to make the code work both locally and in the Cloud
+ENDPOINT_URL = os.getenv('SQS_ENDPOINT_URL') 
+
+sqs = boto3.client(
+    'sqs', 
+    region_name=REGION,
+    endpoint_url=ENDPOINT_URL,  # Add this line
+    aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
+    aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY')
+)
+
+if QUEUE_URL is None:
+    raise ValueError("ERROR: SQS_URL environment variable is not set!")
 
 def process_sentiment(text):
     analysis = TextBlob(text)
@@ -15,6 +31,19 @@ def process_sentiment(text):
     if score > 0: return "Positive"
     elif score < 0: return "Negative"
     else: return "Neutral"
+
+print("Worker started. Waiting for queue to be ready...")
+
+while True:
+    try:
+        # On tente de voir si la queue existe
+        sqs.get_queue_attributes(QueueUrl=QUEUE_URL, AttributeNames=['QueueArn'])
+        break 
+    except Exception:
+        print("Queue not found yet, retrying in 2 seconds...")
+        time.sleep(2)
+
+print("Queue found! Starting to poll messages...")
 
 print("Worker started. Waiting for messages...")
 
@@ -38,3 +67,4 @@ while True:
             QueueUrl=QUEUE_URL,
             ReceiptHandle=msg['ReceiptHandle']
         )
+        print(f"Processed: '{text}' | Result: {sentiment}", flush=True)
