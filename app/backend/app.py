@@ -1,13 +1,15 @@
 from flask import Flask, request, jsonify
 import boto3
 import os
-
+from flask_cors import CORS  # Add this
 
 # This is a Flask API. 
 # It accepts text and sends it to SQS. 
 # For local testing, we'll use an environment variable 
 # to toggle between "Local" and "AWS" mode.
 app = Flask(__name__)
+
+CORS(app) # This allows your React app to talk to the API
 
 # Config
 QUEUE_NAME = os.getenv('SQS_QUEUE_NAME', 'sentiment-queue')
