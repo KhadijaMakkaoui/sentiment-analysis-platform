@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { HiSparkles, HiLightningBolt, HiShieldCheck } from 'react-icons/hi';
 
 function App() {
   const [text, setText] = useState('');
@@ -7,44 +8,65 @@ function App() {
   const [loading, setLoading] = useState(false);
 
   const handleAnalyze = async () => {
+    if (!text) return;
     setLoading(true);
     try {
       const response = await axios.post('http://localhost:5000/analyze', { text });
-      setStatus({ type: 'success', message: `Queued! ID: ${response.data.message_id}` });
-    } catch (error) {
-      setStatus({ type: 'error', message: 'Failed to connect to Backend.' });
+      setStatus({ type: 'success', msg: 'Sent to SQS', id: response.data.message_id });
+    } catch (e) {
+      setStatus({ type: 'error', msg: 'Connection Failed' });
     }
     setLoading(false);
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center justify-center p-4">
-      <div className="max-w-2xl w-full bg-gray-800 rounded-xl shadow-2xl p-8 border border-gray-700">
-        <h1 className="text-4xl font-bold mb-2 text-blue-400">Sentiment AI</h1>
-        <p className="text-gray-400 mb-8">Real-time NLP analysis via AWS SQS & Kubernetes.</p>
-        
+    <div className="min-h-screen bg-[#020617] text-slate-300 flex items-center justify-center p-4 font-sans relative overflow-hidden">
+      {/* Animated Background Glows */}
+      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-600/10 blur-[120px] rounded-full" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-600/10 blur-[120px] rounded-full" />
+
+      <div className="relative z-10 w-full max-w-xl bg-slate-900/40 backdrop-blur-md border border-slate-800 rounded-3xl p-8 shadow-2xl">
+        <header className="flex items-center gap-4 mb-8">
+          <div className="bg-gradient-to-br from-blue-500 to-cyan-400 p-3 rounded-2xl shadow-lg shadow-blue-500/20">
+            <HiSparkles className="text-white text-2xl" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-white tracking-tight">Sentiment<span className="text-blue-400">Engine</span></h1>
+            <p className="text-slate-500 text-xs font-medium uppercase tracking-widest">DevOps Pipeline v1.0</p>
+          </div>
+        </header>
+
         <textarea 
-          className="w-full h-40 p-4 bg-gray-900 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-lg"
-          placeholder="Type how you feel today..."
+          className="w-full h-40 bg-slate-950/50 border border-slate-800 rounded-2xl p-4 text-slate-200 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all placeholder:text-slate-700 resize-none mb-6"
+          placeholder="Enter text to analyze sentiment..."
           value={text}
           onChange={(e) => setText(e.target.value)}
         />
 
         <button 
           onClick={handleAnalyze}
-          disabled={loading}
-          className="mt-6 w-full bg-blue-600 hover:bg-blue-500 transition-colors py-3 rounded-lg font-semibold text-xl disabled:opacity-50"
+          disabled={loading || !text}
+          className="w-full bg-blue-600 hover:bg-blue-500 disabled:bg-slate-800 text-white font-bold py-4 rounded-2xl transition-all flex items-center justify-center gap-3 shadow-xl shadow-blue-600/10 active:scale-[0.98]"
         >
-          {loading ? 'Sending to Queue...' : 'Analyze Sentiment'}
+          {loading ? (
+            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+          ) : (
+            <><HiLightningBolt /> Analyze Sentiment</>
+          )}
         </button>
 
         {status && (
-          <div className={`mt-6 p-4 rounded-lg border ${status.type === 'success' ? 'bg-green-900/30 border-green-500 text-green-400' : 'bg-red-900/30 border-red-500 text-red-400'}`}>
-            {status.message}
+          <div className={`mt-6 p-4 rounded-2xl border flex items-center gap-4 animate-in fade-in zoom-in-95 duration-300 ${
+            status.type === 'success' ? 'bg-emerald-500/5 border-emerald-500/20 text-emerald-400' : 'bg-red-500/5 border-red-500/20 text-red-400'
+          }`}>
+            <HiShieldCheck className="text-xl shrink-0" />
+            <div className="overflow-hidden">
+              <p className="text-sm font-bold">{status.msg}</p>
+              {status.id && <p className="text-[10px] opacity-50 truncate font-mono">{status.id}</p>}
+            </div>
           </div>
         )}
       </div>
-      <footer className="mt-8 text-gray-500 text-sm">DevOps PFE Platform • 2026</footer>
     </div>
   );
 }
