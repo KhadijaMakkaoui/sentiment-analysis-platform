@@ -87,14 +87,17 @@ function App() {
 
         {/* Result Card */}
         {analysis && (
-          <div className={`mt-8 p-6 rounded-2xl border-2 animate-in fade-in zoom-in duration-500 ${
-            analysis.sentiment === 'POSITIVE' 
-              ? 'bg-emerald-500/10 border-emerald-500/50 text-emerald-400 shadow-lg shadow-emerald-500/10' 
-              : 'bg-rose-500/10 border-rose-500/50 text-rose-400 shadow-lg shadow-rose-500/10'
+          <div className={`mt-8 p-6 rounded-2xl border-2 animate-in duration-500 ${
+            analysis.sentiment === 'POSITIVE' ? 'bg-emerald-500/10 border-emerald-500/50 text-emerald-400' :
+            analysis.sentiment === 'NEGATIVE' ? 'bg-rose-500/10 border-rose-500/50 text-rose-400' :
+            'bg-slate-500/10 border-slate-700 text-slate-400' // This is for NEUTRAL
           }`}>
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-black tracking-widest uppercase opacity-70">Analysis Complete</span>
-              {analysis.sentiment === 'POSITIVE' ? <HiCheckCircle size={24}/> : <HiExclamationCircle size={24}/>}
+              {/* Dynamic Icon */}
+              {analysis.sentiment === 'POSITIVE' ? <HiCheckCircle size={24}/> : 
+              analysis.sentiment === 'NEGATIVE' ? <HiExclamationCircle size={24}/> : 
+              <HiSparkles size={24} className="text-slate-500"/>}
             </div>
             <div className="text-3xl font-black mb-1 tracking-tight">{analysis.sentiment}</div>
             <p className="text-sm opacity-80 italic">"{analysis.text}"</p>

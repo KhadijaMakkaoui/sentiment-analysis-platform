@@ -31,13 +31,20 @@ dynamo = boto3.resource(
 # Reference the table created by your init-aws.sh
 table = dynamo.Table('SentimentResults')
 
+from textblob import TextBlob
+
 def analyze_sentiment(text):
-    """Simple sentiment logic for the demo"""
-    positive_words = ['good', 'great', 'happy', 'love', 'excellent', 'amazing']
-    text_lower = text.lower()
-    if any(word in text_lower for word in positive_words):
+    # TextBlob calculates polarity: 
+    # -1.0 (Very Negative) to 1.0 (Very Positive)
+    testimonial = TextBlob(text)
+    polarity = testimonial.sentiment.polarity
+    
+    if polarity > 0.1:
         return "POSITIVE"
-    return "NEGATIVE"
+    elif polarity < -0.1:
+        return "NEGATIVE"
+    else:
+        return "NEUTRAL"
 
 print("🚀 Worker started. Listening for messages...", flush=True)
 
