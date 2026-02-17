@@ -6,45 +6,42 @@ services:
     ports:
       - "4566:4566"
     environment:
-      - SERVICES=sqs
+      - SERVICES=sqs,dynamodb
       - DEFAULT_REGION=us-east-1
       - DEBUG=1
     volumes:
-      - "./init-scripts:/etc/localstack/init/ready.d" # This is the magic line
-
+      - "./init-scripts:/etc/localstack/init/ready.d" 
+      - "/var/run/docker.sock:/var/run/docker.sock"
   backend:
     build: ./app/backend
+    container_name: backend
     ports:
       - "5000:5000"
     environment:
       - SQS_URL=http://localstack:4566/000000000000/sentiment-queue
-      - SQS_ENDPOINT_URL=http://localstack:4566
+      - DYNAMO_ENDPOINT_URL=http://localstack:4566
       - AWS_ACCESS_KEY_ID=test
       - AWS_SECRET_ACCESS_KEY=test
-      - AWS_REGION=us-east-1
     depends_on:
       - localstack
 
   worker:
     build: ./app/worker
+    container_name: worker
     environment:
-      - PYTHONUNBUFFERED=1  # This forces logs to print immediately
       - SQS_URL=http://localstack:4566/000000000000/sentiment-queue
       - SQS_ENDPOINT_URL=http://localstack:4566
+      - DYNAMO_ENDPOINT_URL=http://localstack:4566
+      - PYTHONUNBUFFERED=1
       - AWS_ACCESS_KEY_ID=test
       - AWS_SECRET_ACCESS_KEY=test
-      - AWS_REGION=us-east-1
     depends_on:
       - localstack
-  
+
   frontend:
     build: ./app/frontend
+    container_name: frontend
     ports:
       - "3000:3000"
-    volumes:
-      - ./app/frontend:/app
-      - /app/node_modules # Prevents host modules from overwriting container modules
-    environment:
-      - CHOKIDAR_USEPOLLING=true # Helps with hot-reload on Windows
     depends_on:
       - backend

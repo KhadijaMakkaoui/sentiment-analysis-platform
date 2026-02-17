@@ -1,2 +1,4 @@
+#allows you to interact with AWS services directly from your Python scripts
 boto3
+#Determines whether text has a positive, negative, or neutral tone, returning a polarity score (-1.0 to 1.0) and a subjectivity score (0.0 for objective to 1.0 for subjective).
 textblob
